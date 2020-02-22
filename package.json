@@ -4,7 +4,9 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest --coverage --watchAll",
+    "start": "node app.js",
+    "start:nodemon": "nodemon app.js"
   },
   "keywords": [],
   "author": "",
@@ -13,8 +15,18 @@
     "bcrypt": "^3.0.8",
     "cors": "^2.8.5",
     "express": "^4.17.1",
-    "http-proxy-middleware": "^0.21.0",
+    "jest-express": "^1.11.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.1"
+  },
+  "jest": {
+    "testEnvironment": "node",
+    "coveragePathIgnorePatterns": [
+      "/node_modules/"
+    ]
+  },
+  "devDependencies": {
+    "jest": "^25.1.0",
+    "supertest": "^4.0.2"
   }
 }

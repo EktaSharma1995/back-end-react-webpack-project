@@ -1,11 +1,9 @@
 const express = require("express");
 const app = express();
-const cors = require("cors");
-const proxy = require("http-proxy-middleware");
 var jwt = require("jsonwebtoken");
 var fs = require("fs");
-const connection = require("./Mongo");
-const validation = require("./validation");
+// const connection = require("./Mongo");
+// const validation = require("./validation");
 
 var configKey = fs.readFileSync("./config.key", "utf8");
 
@@ -23,17 +21,15 @@ app.use((req, res, next) => {
 });
 
 const users = [];
-app.get("/", (req, res) => {
-  res.send("Hello World");
+// app.get("/", (req, res) => {
+//   res.send("Hello World");
+// });
+
+app.get("/test", async (req, res) => {
+  res.json({ message: "pass!" });
 });
 
-app.get("/login/users", (req, res) => {
-  res.send(users);
-});
-
-app.post("/login/users", (req, res) => {
-  console.log("*****", req.body);
-
+app.post("/login", (req, res) => {
   const token = jwt.sign({ userEmail: req.body.email }, configKey, {
     expiresIn: "1h"
   });
@@ -44,38 +40,40 @@ app.post("/login/users", (req, res) => {
   };
 
   users.push(user);
-  return res.send(user);
+  return res.status(201).send(user);
 });
 
-app.post("/register/users", (req, res) => {
-  console.log("*****", req.body);
-  const validationRequestMessage = validation.validateRequestForRegister(req);
-  if (validationRequestMessage.success == false) {
-    res.json(validationRequestMessage);
-  } else {
-    let message = "";
+// app.post("/register/users", (req, res) => {
+//   console.log("*****", req.body);
+//   const validationRequestMessage = validation.validateRequestForRegister(req);
+//   if (validationRequestMessage.success == false) {
+//     res.json(validationRequestMessage);
+//   } else {
+//     let message = "";
 
-    const user = {
-      email: req.body.email,
-      password: req.body.password,
-      name: req.body.name
-    };
+//     const user = {
+//       email: req.body.email,
+//       password: req.body.password,
+//       name: req.body.name
+//     };
 
-    user.save(err => {
-      if (err) {
-        if (err.code === 11000) {
-          message = "email already exists";
-        } else if (err.errors) {
-          // Validation errors
-          message = "could not save user, Error: " + err.message;
-        }
-        res.json({ success: false, message: message, err });
-      } else {
-        res.json({ success: true, message: "user registered!" });
-      }
-    });
-  }
-});
+//     user.save(err => {
+//       if (err) {
+//         if (err.code === 11000) {
+//           message = "email already exists";
+//         } else if (err.errors) {
+//           // Validation errors
+//           message = "could not save user, Error: " + err.message;
+//         }
+//         res.json({ success: false, message: message, err });
+//       } else {
+//         res.json({ success: true, message: "user registered!" });
+//       }
+//     });
+//   }
+// });
 
 const port = process.env.port || 3000;
 app.listen(port, () => console.log(`listening to port ${port}...`));
+
+module.exports = app;
