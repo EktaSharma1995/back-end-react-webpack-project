@@ -1,16 +1,17 @@
-const express = require('express');
-const app = express();
-var jwt = require('jsonwebtoken');
-var fs = require('fs');
-const logger = require('./logger').getAccessLogger();
-const { check, validationResult } = require('express-validator');
-const morgan = require('morgan');
+import express, { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+import { check, validationResult } from 'express-validator';
+import morgan from 'morgan';
 
-var configKey = fs.readFileSync('./config.key', 'utf8');
+const configKey = fs.readFileSync('./config.key', 'utf8');
+const app = express();
+const logger = require('./logger').getAccessLogger();
+const port = process.env.port || 3000;
 
 app.use(express.json()); //adding a piece of middleware by express.json
 
-app.use((req, res, next) => {
+app.use((req: Request, res: Response, next: NextFunction) => {
   res.header('Access-Control-Allow-Origin', '*');
   res.header('Access-Control-Allow-Methods', 'GET,PUT,POST,DELETE,OPTIONS');
   res.header(
@@ -21,10 +22,10 @@ app.use((req, res, next) => {
 });
 
 app.use(
-  morgan('short', {
+  morgan('combined', {
     stream: {
-      write: function(message, encoding) {
-        logger.info(message);
+      write: function(meta: any) {
+        logger.info(meta);
       }
     }
   })
@@ -38,14 +39,27 @@ app.get('/test', async (req, res) => {
   res.json({ message: 'pass!' });
 });
 
+interface loginResponse {
+  email: String;
+  token: String;
+}
+
 app.post(
   '/login',
   [
     check('email').isEmail(),
     // password must be at least 5 chars long
-    check('password').isLength({ min: 5 })
+    check('password', 'The password must be 5+ chars long and contain a number')
+      .isLength({ min: 5 })
+      .not()
+      .isIn(['password', 'god'])
+      .withMessage('Do not use a common word as the password')
+      .matches(
+        /^(?=.*?[a-z])(?=.*?[A-Z])(?=.*?[\d])(?=.*?[\W]).{8,35}$/,
+        'Not a valid format'
+      )
   ],
-  (req, res) => {
+  (req: Request, res: Response) => {
     const errors = validationResult(req);
     console.log(errors);
     if (!errors.isEmpty()) {
@@ -59,7 +73,7 @@ app.post(
       expiresIn: '1h'
     });
 
-    const user = {
+    const user: loginResponse = {
       email: req.body.email,
       token: token
     };
@@ -69,9 +83,8 @@ app.post(
   }
 );
 
-const port = process.env.port || 3000;
 app.listen(port, () =>
   logger.info(`Server is up and listening to port: ${port}...`)
 );
 
-module.exports = app;
+export default app;

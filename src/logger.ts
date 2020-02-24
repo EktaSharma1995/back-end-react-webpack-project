@@ -1,21 +1,21 @@
-const { createLogger, transports, format } = require("winston");
+import { createLogger, transports, format } from 'winston';
 
 function getAccessLogger() {
   const colorizer = format.colorize();
 
   const loggingOptions = {
     file: {
-      level: "info",
-      filename: "logs/access.log",
+      level: 'info',
+      filename: 'logs/access.log',
       json: true,
       colorize: false
     },
     console: {
-      level: "debug",
+      level: 'debug',
       json: true,
       colorize: true,
       format: format.combine(
-        format.timestamp({ format: "YYYY-MM-DD HH:mm:ss" }),
+        format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
         format.printf(msg =>
           colorizer.colorize(
             msg.level,
