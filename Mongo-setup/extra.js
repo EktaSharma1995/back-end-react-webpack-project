@@ -45,5 +45,35 @@ app.post("/login/users", cors(), (req, res) => {
   return res.send(user);
 });
 
+// app.post("/register/users", (req, res) => {
+//   console.log("*****", req.body);
+//   const validationRequestMessage = validation.validateRequestForRegister(req);
+//   if (validationRequestMessage.success == false) {
+//     res.json(validationRequestMessage);
+//   } else {
+//     let message = "";
+
+//     const user = {
+//       email: req.body.email,
+//       password: req.body.password,
+//       name: req.body.name
+//     };
+
+//     user.save(err => {
+//       if (err) {
+//         if (err.code === 11000) {
+//           message = "email already exists";
+//         } else if (err.errors) {
+//           // Validation errors
+//           message = "could not save user, Error: " + err.message;
+//         }
+//         res.json({ success: false, message: message, err });
+//       } else {
+//         res.json({ success: true, message: "user registered!" });
+//       }
+//     });
+//   }
+// });
+
 const port = process.env.port || 3000;
 app.listen(port, () => console.log(`listening to port ${port}...`));
