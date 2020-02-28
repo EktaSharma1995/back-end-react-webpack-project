@@ -2,3 +2,5 @@ node_modules/
 config.key
 coverage/
 logs/
+dist/
+.env

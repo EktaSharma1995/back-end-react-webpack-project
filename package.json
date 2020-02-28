@@ -6,8 +6,9 @@
   "scripts": {
     "test": "jest --coverage --watchAll",
     "start": "node src/app.ts",
-    "start:nodemon": "nodemon src/app.ts",
-    "test config": "jest --showConfig"
+    "start:nodemon": "nodemon src/server.ts",
+    "test config": "jest --showConfig",
+    "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix"
   },
   "keywords": [],
   "author": "",
@@ -19,12 +20,16 @@
     "@types/node": "^13.7.4",
     "bcrypt": "^3.0.8",
     "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
+    "eslint": "^6.8.0",
     "express": "^4.17.1",
+    "express-flash-messages": "^0.1.1",
     "express-validator": "^6.4.0",
     "jest-express": "^1.11.0",
     "jsonwebtoken": "^8.5.1",
     "mongoose": "^5.9.1",
     "morgan": "^1.9.1",
+    "prettier-eslint": "^9.0.1",
     "ts-jest": "^25.2.1",
     "ts-node": "^8.6.2",
     "typescript": "^3.8.2",
@@ -39,6 +44,8 @@
   "devDependencies": {
     "@types/jsonwebtoken": "^8.3.7",
     "@types/supertest": "^2.0.8",
+    "@typescript-eslint/eslint-plugin": "^2.21.0",
+    "@typescript-eslint/parser": "^2.21.0",
     "jest": "^25.1.0",
     "supertest": "^4.0.2"
   }

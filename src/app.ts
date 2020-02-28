@@ -3,11 +3,13 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import { check, validationResult } from 'express-validator';
 import morgan from 'morgan';
+import * as userController from './controllers/user';
 
 const configKey = fs.readFileSync('./config.key', 'utf8');
 const app = express();
 const logger = require('./logger').getAccessLogger();
-const port = process.env.port || 3000;
+
+app.set('port', process.env.PORT || 3000);
 
 app.use(express.json()); //adding a piece of middleware by express.json
 
@@ -35,13 +37,13 @@ const users = [];
 //   res.send("Hello World");
 // });
 
-app.get('/test', async (req, res) => {
+app.get('/test', (req, res) => {
   res.json({ message: 'pass!' });
 });
 
-interface loginResponse {
-  email: String;
-  token: String;
+interface LoginResponse {
+  email: string;
+  token: string;
 }
 
 app.post(
@@ -63,7 +65,7 @@ app.post(
     const errors = validationResult(req);
     console.log(errors);
     if (!errors.isEmpty()) {
-      logger.error(`error in validating fields`);
+      logger.error('error in validating fields');
       return res.status(422).json({ errors: errors.array() });
     }
 
@@ -73,7 +75,7 @@ app.post(
       expiresIn: '1h'
     });
 
-    const user: loginResponse = {
+    const user: LoginResponse = {
       email: req.body.email,
       token: token
     };
@@ -81,10 +83,6 @@ app.post(
     users.push(user);
     return res.status(201).send(user);
   }
-);
-
-app.listen(port, () =>
-  logger.info(`Server is up and listening to port: ${port}...`)
 );
 
 export default app;
