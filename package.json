@@ -5,7 +5,7 @@
   "main": "src/app.js",
   "scripts": {
     "test": "jest --coverage --watchAll",
-    "start": "node src/app.ts",
+    "start": "node src/server.ts",
     "start:nodemon": "nodemon src/server.ts",
     "test config": "jest --showConfig",
     "lint": "tsc --noEmit && eslint \"**/*.{js,ts}\" --quiet --fix"
