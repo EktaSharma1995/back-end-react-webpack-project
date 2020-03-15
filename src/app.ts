@@ -46,6 +46,10 @@ interface LoginResponse {
   token: string;
 }
 
+app.get('/health', (req, res) => {
+  res.send('success');
+});
+
 app.post(
   '/login',
   [
