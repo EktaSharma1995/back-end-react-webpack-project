@@ -3,7 +3,7 @@ import jwt from 'jsonwebtoken';
 import fs from 'fs';
 import { check, validationResult } from 'express-validator';
 import morgan from 'morgan';
-import * as userController from './controllers/user';
+// import * as userController from './controllers/user';
 
 const configKey = fs.readFileSync('./config.key', 'utf8');
 const app = express();
