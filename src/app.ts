@@ -47,7 +47,7 @@ interface LoginResponse {
 }
 
 app.get('/health', (req, res) => {
-  res.send('success');
+  res.send({ status: 200, message: 'success' });
 });
 
 app.post(
