@@ -1,17 +1,7 @@
-import app from './app';
+import app from '../src/app';
 import request from 'supertest';
 
 const appRequest = request(app);
-
-describe('test Endpoints', () => {
-  it('gets the test endpoint', async done => {
-    const response = await appRequest.get('/test');
-
-    expect(response.status).toBe(200);
-    expect(response.body.message).toBe('pass!');
-    done();
-  });
-});
 
 describe('Post Endpoints', () => {
   it('should create a new user', function(done) {

@@ -1,7 +1,7 @@
 import app from './app';
 import dotenv from 'dotenv';
 
-const logger = require('./logger').getAccessLogger();
+const logger = require('./util/logger').getAccessLogger();
 dotenv.config();
 
 const server = app.listen(app.get('port'), () => {
