@@ -2,14 +2,21 @@ import { Request, Response } from 'express';
 import { check, validationResult } from 'express-validator';
 import fs from 'fs';
 const logger = require('../util/logger').getAccessLogger();
+import jwtDecode = require('jwt-decode');
 import jwt from 'jsonwebtoken';
 const configKey = fs.readFileSync('./config.key', 'utf8');
 
-interface LoginResponse {
+interface TokenObj {
   email: string;
-  token: string;
+  iat: string;
+  exp: string;
 }
-const users = [];
+
+const users = [
+  { name: 'Nivaan Sharma', email: 'nivaansharma2015@gmail.com' },
+  { name: 'Navika Sharma', email: 'navikasharma2019@gmail.com' },
+  { name: 'Riaan Sharma', email: 'riaansharma2019@gmail.com' }
+];
 
 export const postLogin = async (req: Request, res: Response) => {
   await check('email')
@@ -39,15 +46,41 @@ export const postLogin = async (req: Request, res: Response) => {
 
   logger.debug('User passed the validation');
 
-  const token = jwt.sign({ userEmail: req.body.email }, configKey, {
+  const token = jwt.sign({ email: req.body.email }, configKey, {
     expiresIn: '1h'
   });
 
-  const user: LoginResponse = {
+  const user = {
     email: req.body.email,
-    token: token
+    name: 'Nivaan Sharma'
   };
 
   users.push(user);
-  return res.status(201).send(user);
+  return res.status(201).send(token);
+};
+
+export const getUserInfo = (req: Request, res: Response) => {
+  const token = req.headers['authorization'];
+  if (token) {
+    const decodedToken: TokenObj = jwtDecode(token);
+
+    const userObj = users.filter(
+      userIterator => decodedToken.email === userIterator.email
+    );
+
+    if (userObj) {
+      console.log(userObj);
+      return res.status(201).send(userObj);
+    } else {
+      return res.json({
+        success: false,
+        message: 'No match found'
+      });
+    }
+  } else {
+    return res.json({
+      success: false,
+      message: 'Token is missing'
+    });
+  }
 };

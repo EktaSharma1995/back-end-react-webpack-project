@@ -20,6 +20,7 @@ app.use((req: Request, res: Response, next: NextFunction) => {
   next();
 });
 
+// HTTP Request Logger
 app.use(
   morgan('combined', {
     stream: {
@@ -31,6 +32,7 @@ app.use(
 );
 
 app.get('/health', healthController.health);
+app.get('/user', userController.getUserInfo);
 app.post('/login', userController.postLogin);
 
 export default app;
