@@ -38,7 +38,7 @@ export const postLogin = async (req: Request, res: Response) => {
     .run(req);
 
   const errors = validationResult(req);
-  console.log(errors);
+  logger.error(errors);
   if (!errors.isEmpty()) {
     logger.error('error in validating fields');
     return res.status(422).json({ errors: errors.array() });
@@ -46,17 +46,21 @@ export const postLogin = async (req: Request, res: Response) => {
 
   logger.debug('User passed the validation');
 
-  const token = jwt.sign({ email: req.body.email }, configKey, {
-    expiresIn: '1h'
-  });
+  const email = users.find(({ email }) => email === req.body.email);
 
-  const user = {
-    email: req.body.email,
-    name: 'Nivaan Sharma'
-  };
+  if (email) {
+    logger.info('Email exists');
 
-  users.push(user);
-  return res.status(201).send(token);
+    const token = jwt.sign({ email: req.body.email }, configKey, {
+      expiresIn: '1h'
+    });
+    return res.status(201).json({ token });
+  } else {
+    logger.info('Email not exist');
+    return res
+      .status(404)
+      .json({ success: 'false', message: 'Email/password not matched' });
+  }
 };
 
 export const getUserInfo = (req: Request, res: Response) => {
@@ -69,6 +73,7 @@ export const getUserInfo = (req: Request, res: Response) => {
     );
 
     if (userObj) {
+      logger.info('User matched for the information');
       console.log(userObj);
       return res.status(201).send(userObj);
     } else {
