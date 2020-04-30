@@ -1,10 +1,13 @@
-import { Request, Response } from 'express';
+import { Request, Response, NextFunction } from 'express';
 import { check, validationResult } from 'express-validator';
 import fs from 'fs';
 const logger = require('../util/logger').getAccessLogger();
-import jwtDecode = require('jwt-decode');
+import jwtDecode from 'jwt-decode';
 import jwt from 'jsonwebtoken';
 const configKey = fs.readFileSync('./config.key', 'utf8');
+import passport from 'passport';
+import '../passport-config';
+import { User, UserDocument } from '../models/User';
 
 interface TokenObj {
   email: string;
@@ -12,13 +15,63 @@ interface TokenObj {
   exp: string;
 }
 
-const users = [
-  { name: 'Nivaan Sharma', email: 'nivaansharma2015@gmail.com' },
-  { name: 'Navika Sharma', email: 'navikasharma2019@gmail.com' },
-  { name: 'Riaan Sharma', email: 'riaansharma2019@gmail.com' }
-];
+export const postSignup = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  await check('email', 'Email is not valid')
+    .isEmail()
+    .run(req);
+  await check('password', 'Password must be at least 4 characters long')
+    .isLength({ min: 4 })
+    .run(req);
+  await check('confirmPassword', 'Passwords do not match')
+    .equals(req.body.password)
+    .run(req);
 
-export const postLogin = async (req: Request, res: Response) => {
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    logger.error('error in validating fields while Sign - Up');
+    return res.status(422).json({ errors: errors.array() });
+  }
+
+  const user = new User({
+    email: req.body.email,
+    password: req.body.password
+  });
+
+  User.findOne({ email: req.body.email }, (err, existingUser) => {
+    if (err) {
+      return next(err);
+    }
+    if (existingUser) {
+      logger.error('Account with this username already exists');
+      return res.status(403).json({
+        success: false,
+        message: 'Account with this username already exists'
+      });
+    }
+    user.save(err => {
+      if (err) {
+        return next(err);
+      }
+      req.logIn(user, err => {
+        if (err) {
+          return next(err);
+        }
+        res.json({ success: true, message: 'user registered' });
+      });
+    });
+  });
+};
+
+export const postLogin = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
   await check('email')
     .isEmail()
     .run(req);
@@ -40,27 +93,33 @@ export const postLogin = async (req: Request, res: Response) => {
   const errors = validationResult(req);
   logger.error(errors);
   if (!errors.isEmpty()) {
-    logger.error('error in validating fields');
+    logger.error('error in validating fields while Login');
     return res.status(422).json({ errors: errors.array() });
   }
 
   logger.debug('User passed the validation');
 
-  const email = users.find(({ email }) => email === req.body.email);
+  passport.authenticate('local', (err: Error, user: UserDocument) => {
+    if (err) {
+      return next(err);
+    }
 
-  if (email) {
-    logger.info('Email exists');
+    if (!user) {
+      logger.error('No user exists with this email');
+      return res.status(422);
+    }
 
-    const token = jwt.sign({ email: req.body.email }, configKey, {
-      expiresIn: '1h'
+    req.logIn(user, err => {
+      if (err) {
+        return next(err);
+      }
+      const email = user.email;
+      const token = jwt.sign({ email: email }, configKey, {
+        expiresIn: '1h'
+      });
+      return res.status(201).json({ token });
     });
-    return res.status(201).json({ token });
-  } else {
-    logger.info('Email not exist');
-    return res
-      .status(404)
-      .json({ success: 'false', message: 'Email/password not matched' });
-  }
+  })(req, res, next);
 };
 
 export const getUserInfo = (req: Request, res: Response) => {
@@ -68,20 +127,17 @@ export const getUserInfo = (req: Request, res: Response) => {
   if (token) {
     const decodedToken: TokenObj = jwtDecode(token);
 
-    const userObj = users.filter(
-      userIterator => decodedToken.email === userIterator.email
-    );
-
-    if (userObj) {
-      logger.info('User matched for the information');
-      console.log(userObj);
-      return res.status(201).send(userObj);
-    } else {
-      return res.json({
-        success: false,
-        message: 'No match found'
-      });
-    }
+    User.findOne({ email: decodedToken.email }, (err, userExists) => {
+      if (userExists) {
+        console.log(userExists);
+        return res.status(201).send(userExists);
+      } else {
+        return res.json({
+          success: false,
+          message: 'No match found'
+        });
+      }
+    });
   } else {
     return res.json({
       success: false,
