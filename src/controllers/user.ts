@@ -115,7 +115,7 @@ export const postLogin = async (
       }
       const email = user.email;
       const token = jwt.sign({ email: email }, configKey, {
-        expiresIn: '1h'
+        expiresIn: '1m'
       });
       return res.status(201).json({ token });
     });
@@ -129,8 +129,9 @@ export const getUserInfo = (req: Request, res: Response) => {
 
     User.findOne({ email: decodedToken.email }, (err, userExists) => {
       if (userExists) {
-        console.log(userExists);
-        return res.status(201).send(userExists);
+        const email = userExists.email;
+        console.log(email);
+        return res.status(201).send(email);
       } else {
         return res.json({
           success: false,

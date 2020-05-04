@@ -8,11 +8,16 @@ import cookieParser from 'cookie-parser';
 import mongo from 'connect-mongo';
 import mongoose from 'mongoose';
 import bluebird from 'bluebird';
+import jwtDecode from 'jwt-decode';
+import jwt from 'jsonwebtoken';
+import fs from 'fs';
+
 import * as userController from './controllers/user';
 import * as healthController from './controllers/health';
 
 const MongoStore = mongo(session);
 const app = express();
+const configKey = fs.readFileSync('./config.key', 'utf8');
 
 const mongoUrl = process.env.DB_STRING || 'mongodb://localhost:27017/cart';
 mongoose.Promise = bluebird;
@@ -83,8 +88,33 @@ app.use(passport.session());
 app.use(methodOverride('_method'));
 
 app.get('/health', healthController.health);
-app.post('/register', userController.postSignup);
 app.post('/login', userController.postLogin);
+app.post('/register', userController.postSignup);
+
+//Middleware
+app.use((req: Request, res: Response, next: NextFunction) => {
+  const token = req.headers['authorization'];
+
+  if (!token) {
+    res.status(401).json({ success: false, message: 'No token provided' }); // Return error
+  } else {
+    // Verify the token is valid
+    jwt.verify(token, configKey, (err: any, decoded: any) => {
+      // Check if error is expired or invalid
+      if (err) {
+        res
+          .status(401)
+          .json({ success: false, message: 'Token invalid: ' + err }); // Return error for token validation
+      } else {
+        // eslint-disable-next-line @typescript-eslint/consistent-type-assertions
+        (<any>req).decoded = decoded;
+        // Create global variable to use in any request beyond
+        next(); // Exit middleware
+      }
+    });
+  }
+});
+
 app.get('/user', userController.getUserInfo);
 
 export default app;
