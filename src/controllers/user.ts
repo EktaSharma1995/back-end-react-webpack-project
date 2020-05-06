@@ -115,34 +115,59 @@ export const postLogin = async (
       }
       const email = user.email;
       const token = jwt.sign({ email: email }, configKey, {
-        expiresIn: '1m'
+        expiresIn: '1h'
       });
       return res.status(201).json({ token });
     });
   })(req, res, next);
 };
 
-export const getUserInfo = (req: Request, res: Response) => {
-  const token = req.headers['authorization'];
-  if (token) {
-    const decodedToken: TokenObj = jwtDecode(token);
+export const getUserInfo = (req: any, res: any) => {
+  const sessionEmail = req.session.passport.user;
+  console.log('session email ' + sessionEmail);
+  User.findOne({ email: sessionEmail }, (err, userExists) => {
+    if (userExists) {
+      const email = userExists.email;
 
-    User.findOne({ email: decodedToken.email }, (err, userExists) => {
-      if (userExists) {
-        const email = userExists.email;
-        console.log(email);
-        return res.status(201).send(email);
-      } else {
-        return res.json({
-          success: false,
-          message: 'No match found'
-        });
-      }
-    });
-  } else {
-    return res.json({
-      success: false,
-      message: 'Token is missing'
-    });
-  }
+      const user = {
+        email: email,
+        name: 'Navika Sharma'
+      };
+
+      return res.status(201).send(user);
+    } else {
+      return res.json({
+        success: false,
+        message: 'No match found'
+      });
+    }
+  });
+};
+
+// export const getUserInfo = (req: Request, res: Response) => {
+//   const token = req.headers['authorization'];
+//   if (token) {
+//     const decodedToken: TokenObj = jwtDecode(token);
+
+//     User.findOne({ email: decodedToken.email }, (err, userExists) => {
+//       if (userExists) {
+//         console.log(userExists);
+//         return res.status(201).send(userExists);
+//       } else {
+//         return res.json({
+//           success: false,
+//           message: 'No match found'
+//         });
+//       }
+//     });
+//   } else {
+//     return res.json({
+//       success: false
+//     });
+//   }
+// };
+
+export const logout = (req: Request, res: Response) => {
+  req.logout();
+  res.redirect('/login');
 };
