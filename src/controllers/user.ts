@@ -2,18 +2,13 @@ import { Request, Response, NextFunction } from 'express';
 import { check, validationResult } from 'express-validator';
 import fs from 'fs';
 const logger = require('../util/logger').getAccessLogger();
-import jwtDecode from 'jwt-decode';
 import jwt from 'jsonwebtoken';
 const configKey = fs.readFileSync('./config.key', 'utf8');
 import passport from 'passport';
 import '../passport-config';
 import { User, UserDocument } from '../models/User';
-
-interface TokenObj {
-  email: string;
-  iat: string;
-  exp: string;
-}
+import session from 'express-session';
+import { any } from 'bluebird';
 
 export const postSignup = async (
   req: Request,
@@ -144,30 +139,34 @@ export const getUserInfo = (req: any, res: any) => {
   });
 };
 
-// export const getUserInfo = (req: Request, res: Response) => {
-//   const token = req.headers['authorization'];
-//   if (token) {
-//     const decodedToken: TokenObj = jwtDecode(token);
+export const isUserLoggedIn = (req: any, res: any) => {
+  console.log('User is still logged In');
+  console.log('Before calling getUserInfo: ' + req.session.passport.user);
+  getUserInfo(req, res);
+  console.log('After calling getUserInfo: ' + req.session.passport.user);
+};
 
-//     User.findOne({ email: decodedToken.email }, (err, userExists) => {
-//       if (userExists) {
-//         console.log(userExists);
-//         return res.status(201).send(userExists);
-//       } else {
-//         return res.json({
-//           success: false,
-//           message: 'No match found'
-//         });
-//       }
-//     });
-//   } else {
-//     return res.json({
-//       success: false
-//     });
-//   }
-// };
-
-export const logout = (req: Request, res: Response) => {
+export const logout = (req: any, res: any) => {
+  console.log('Session' + req.session);
   req.logout();
-  res.redirect('/login');
+  logger.info('Successfully Logout of the Session');
+
+  req.session.destroy((error: any) => {
+    if (error) {
+      logger.error('Error : Failed to destroy the session during logout.');
+      console.log(
+        'Error : Failed to destroy the session during logout.',
+        error
+      );
+    } else {
+      req.user = null;
+      logger.info('Successfully destroyed the session');
+      console.log(req.session);
+      res.clearCookie('connect.sid', {
+        domain: 'localhost',
+        path: '/'
+      });
+      res.redirect('/health');
+    }
+  });
 };

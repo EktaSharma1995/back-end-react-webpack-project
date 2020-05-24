@@ -47,6 +47,7 @@
     "prettier-eslint": "^9.0.1",
     "ts-jest": "^25.2.1",
     "typescript": "^3.8.2",
+    "uest": "^1.0.20",
     "winston": "^3.2.1"
   },
   "jest": {

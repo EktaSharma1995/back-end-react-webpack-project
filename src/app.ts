@@ -17,7 +17,6 @@ import * as healthController from './controllers/health';
 const MongoStore = mongo(session);
 const app = express();
 const configKey = fs.readFileSync('./config.key', 'utf8');
-import nocache from 'nocache';
 
 const mongoUrl = process.env.DB_STRING || 'mongodb://localhost:27017/cart';
 mongoose.Promise = bluebird;
@@ -71,7 +70,7 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || 'dcsbjvbdfn',
     resave: false,
-    saveUninitialized: true,
+    saveUninitialized: false,
     cookie: {
       maxAge: 30 * 60 * 1000,
       httpOnly: true
@@ -126,4 +125,5 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 
 app.get('/user', userController.getUserInfo);
 app.get('/logout', userController.logout);
+app.get('/isUserLoggedIn', userController.isUserLoggedIn);
 export default app;
