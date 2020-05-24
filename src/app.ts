@@ -70,7 +70,7 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET || 'dcsbjvbdfn',
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true,
     cookie: {
       maxAge: 30 * 60 * 1000,
       httpOnly: true
