@@ -18,7 +18,7 @@ const MongoStore = mongo(session);
 const app = express();
 const configKey = fs.readFileSync('./config.key', 'utf8');
 
-const mongoUrl = process.env.DB_STRING || 'mongodb://localhost:27017/cart';
+const mongoUrl = process.env.DB_STRING || 'mongodb://mongo:27017/cart';
 mongoose.Promise = bluebird;
 
 mongoose
