@@ -9,7 +9,7 @@ services:
     ports:
       - '27018:27018'
   node-app:
-    image: esharma/nodejs-app-demo
+    image: ektasharma95/nodejs-app-demo
     restart: always
     environment:
       NODE_ENV: production
