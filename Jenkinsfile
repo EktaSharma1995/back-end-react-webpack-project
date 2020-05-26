@@ -16,9 +16,6 @@ node {
         nodeImage.pull();
 
         dir("app/back-end-react-webpack-project"){
-             environment {
-                PATH = "$PATH:/usr/bin"
-            }
             sh "docker-compose -f docker-compose.prod.yml up --build"
         }
 
