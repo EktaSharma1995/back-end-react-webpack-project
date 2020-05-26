@@ -13,7 +13,7 @@ node {
 
     stage('Pull image on Container'){
         def nodeImage = docker.image('ektasharma95/nodejs-app-demo');
-        nodeImage.pull;
+        nodeImage.pull();
 
         dir("/root/back-end-react-webpack-project"){
             sh "docker-compose -f docker-compose.prod.yml up --build"
