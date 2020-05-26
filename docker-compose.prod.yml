@@ -1,0 +1,19 @@
+version: '3'
+services:
+  mongo:
+    image: mongo:4.2
+    container_name: mongo
+    restart: always
+    volumes:
+      - '/root/mongodb:/data/db'
+    ports:
+      - '27018:27018'
+  node-app:
+    image: nodejs-app-demo
+    restart: always
+    environment:
+      NODE_ENV: production
+    ports:
+      - '3000:3000'
+    depends_on:
+      - mongo
