@@ -13,12 +13,15 @@ import fs from 'fs';
 
 import * as userController from './controllers/user';
 import * as healthController from './controllers/health';
+import * as productController from './controllers/product';
 
 const MongoStore = mongo(session);
 const app = express();
 const configKey = fs.readFileSync('./config.key', 'utf8');
 
-const mongoUrl = process.env.DB_STRING || 'mongodb://mongo:27017/cart';
+const mongoUrl = process.env.DB_STRING || 'mongodb://localhost:27017/cart';
+
+// const mongoUrl = process.env.DB_STRING || 'mongodb://mongo:27017/cart';
 mongoose.Promise = bluebird;
 
 mongoose
@@ -39,6 +42,12 @@ const logger = require('./util/logger').getAccessLogger();
 dotenv.config();
 app.set('port', process.env.PORT || 3000);
 
+// app.use(express.static(path.join(__dirname, 'public'))); //  "public" off of current is root
+
+// app.use('/media', express.static(__dirname + '/media'));
+// app.use(express.static(__dirname + '/public'));
+
+// app.use('/assets', express.static('public'));
 app.use(express.json()); //adding a piece of middleware by express.json
 app.use(express.urlencoded({ extended: false }));
 
@@ -84,13 +93,23 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 app.use(methodOverride('_method'));
+app.use(express.static('media'));
+
 app.get('/health', healthController.health);
 app.post('/login', userController.postLogin);
 app.post('/register', userController.postSignup);
 
-const skipPaths = ['/login', '/health', '/register'];
+const skipPaths = [
+  '/login',
+  '/health',
+  '/register',
+  '/1.jpeg',
+  '/2.jpeg',
+  '/3.jpeg',
+  '/media'
+];
 
-//Middleware
+//Middleware;
 app.use((req: Request, res: Response, next: NextFunction) => {
   const path = req.path;
   console.log('path: ' + path);
@@ -126,4 +145,6 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.get('/user', userController.getUserInfo);
 app.get('/logout', userController.logout);
 app.get('/isUserLoggedIn', userController.isUserLoggedIn);
+app.get('/products', productController.getProducts);
+app.post('/cartProducts', productController.postProductsInCart);
 export default app;
